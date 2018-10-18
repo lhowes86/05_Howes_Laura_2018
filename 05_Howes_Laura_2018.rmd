@@ -1,0 +1,453 @@
+
+#' Homework week 05
+#'
+#' @Date 2018-10-17
+# '
+#' @author Laura Howes
+#-------------------------------------------------------------------------
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r eval=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(readr)
+library(patchwork)
+```
+
+
+# Problem 1
+
+###W&S Chapter 8 X^2 Questions 12 and 24. Use R where possible.
+
+###12:
+
+```{r eval=FALSE}
+setwd("C:/Users/Laura/Dropbox/Grad school/BIOL 607 Biostats/Homework/data")
+getwd()
+bears <- read_csv("./chap08q12SpiritBearGenetics.csv")
+```
+####12a:
+
+##### 42 BB, 24 Bb, and 21 bb allele pairs of 87 total sampled bears.
+
+```{r eval=FALSE}
+(24+42)/(174)
+```
+##### Fraction of b alleles in the population is 0.3793103 [eg the probability of b is P(b)]
+
+
+####12b: Frequencies assuming binomial distribution
+
+#####Probability of bb is P(b)&P(b) so (0.3793103)*(0.3793103) = 0.1438763
+#####0.1438763x87= 12.51724
+
+####Expected frequency of bb = 12.51724
+
+#####Probability of BB is P(B)&P(B) so (1-0.3793103)*(1-0.3793103) = 0.3852557
+#####0.3852557x87= 33.51725
+
+####Expected frequency of BB = 33.51725
+
+#####Expected freqency of Bb is 87 -> epected frequencies of BB and bb
+#####87-33.51725-12.51724= 40.96551
+
+####Expected frequency of Bb = 40.96551
+
+
+####12c:
+
+```{r eval=FALSE}
+observed_freqs <- c(42, 24, 21)
+expected_freqs <- c(33.51725, 40.96551, 12.51724)
+
+table_freq= rbind(observed_freqs, expected_freqs)
+
+colnames(table_freq)= c("BB","Bb", "bb")
+head(table_freq)
+
+barplot(table_freq, beside = TRUE, legend.text = c("Observed","Expected"))
+```
+#####Observed Bb was less than expected, while observed BB and bb were greater than expected.
+
+###24:
+
+####24a:
+
+```{r eval=FALSE}
+dodders <- read_csv("./chap08q24DodderGrowth.csv")
+
+dodders <- dodders %>% 
+  group_by(directionOfGrowth) %>%
+  tally()
+
+dodders <- dodders %>%
+  mutate(Freqs = n/30)
+
+
+ggplot(data = dodders, mapping = aes(x = directionOfGrowth, y = Freqs, 
+                                 fill = directionOfGrowth)) +
+  geom_col()
+```
+
+#####A bar graph is ideal
+
+
+####24b:
+
+#####The relative frequencies expected if no cues is .25 for each.
+
+```{r eval=FALSE}
+dodders <- dodders %>% 
+  mutate(expected_freq_if_no_cues = c(0.25,0.25,0.25,0.25))
+```
+
+#####side by side bar graphs of Relative Frequencies 
+
+```{r eval=FALSE}
+bar_1 <- ggplot(data = dodders, mapping = aes(x = directionOfGrowth, y = Freqs, 
+                                 fill = directionOfGrowth)) +
+  geom_col()
+
+bar_2 <- ggplot(data = dodders, mapping = aes(x = directionOfGrowth, y = expected_freq_if_no_cues, 
+                                     fill = directionOfGrowth)) +
+  geom_col() + expand_limits(y=c(0, 0.6))
+
+
+bar_1 + bar_2
+```
+
+
+####24c:Using the data, calculate the fraction of seedlings growing towards volatiles 
+
+#####17 seeds grow towards volatiles, so 17/30 = 0.5666667, 0.567 is the fraction of seedlings that grow towards volatiles. This fraction is how likely the seedlings will grow towards volatiles.
+
+
+####24d: Provide a standard error for your estimate. What does the standard error represent?
+
+```{r eval=FALSE}
+towards_vol_prob <- 17/30
+
+sqrt((towards_vol_prob*(1-towards_vol_prob))/30)  
+```
+#####SE = 0.09047201
+
+#####The SE represents the precision of the estimate. Since the SE is small, that means the data is nearly precise.
+
+
+####24e: Calculate the range of most-plausible values for the fraction of dodder seedlings that grow toward volatiles under experimental conditions. Does it include the fraction expected if the parasite is unable to detect plant volatiles or other cues?
+
+#####CI = 2*SE
+
+```{r eval=FALSE}
+CI <-2*0.09047201
+
+Upper_CI <- towards_vol_prob + CI
+
+Lower_CI <- towards_vol_prob - CI
+```
+
+#####The range of most plausible values (of a 95 CI) is 0.3857226 to 0.7476107.It excludes the fraction expected if the seedling is unable to detect, as that value was .25 which is outside the above range.
+
+###W&S Chapter 9 X^2 Questions 16 and 27. Use R where possible.
+
+###16:
+
+```{r eval=FALSE}
+prairie_dogs <- read_csv ("./chap09q16PrairieDogMultipleMating.csv")
+```
+
+####16a: Calculate the expected frequencies for a contingency test
+
+#####Expected[row i total]*[column j total]/grand total. So I set up a table from prairie dog book table to calculate totals.
+
+#####row i (births) total = 249, row j (no births) total = 14, grand total = 263
+#####col 1(# times mated) total = 87, col 2 = 93, col 3 = 41, col 4 = 17, col 5 = 5
+
+#####Expected frequencies:
+
+```{r eval=FALSE}
+Times_mated_1_birth <- (249*87)/263
+# 82.36882
+Times_mated_2_birth <- (249*93)/263
+# 88.04943
+Times_mated_3_birth <- (249*61)/263
+# 57.75285
+Times_mated_4_birth <- (249*17)/263
+# 16.09506
+Times_mated_5_birth <- (249*5)/263
+# 4.73384
+Times_mated_1_no_birth <- (14*87)/263
+# 4.631179
+Times_mated_2_no_birth <- (14*93)/263
+# 4.95057
+Times_mated_3_no_birth <- (14*61)/263
+# 3.247148
+Times_mated_4_no_birth <- (14*17)/263
+# 0.904943
+Times_mated_5_no_birth <- (14*5)/263
+# 0.2661597
+```
+
+####16b:
+
+#####These expected frequencies dont meet the assumptions of an X^2 contingency test because there are two cells that have an expected frequency of <1, and also more than 5 cells have an expected frequency of <5.
+
+#####In order to meet the assumptions and make a test, more columns could be combined to increase frequency level, or a permutation test could be used instead.
+
+####16c:
+
+#####It probably does mean that more mates makes it more likely females would give birth, but other things such as their age (if you are older/bigger you'll be more fit) or where they happen to burrow their dens could effect birth rate.
+
+###27:
+
+```{r eval=FALSE}
+widows <- read_csv("./chap09q27WidowHealth.csv") 
+head(widows)
+
+widow_table <- table(widows$health_deterioration, widows$widowed)
+widow_table
+
+chisq.test(widows$health_deterioration,widows$widowed)
+```
+
+#####The P value of the chisquare test is P = 0.00374, which means the null hypothesis of the death of a spouse not causing health deterioration can be rejected.The probability of this rejection of the null hypotheis being wrong is 3.74%. 
+
+# Problem 2
+
+###W&S t-test questions Chapter 11 Question 21
+
+###21:
+
+####21a: Make a graph of the soil data
+
+```{r eval=FALSE}
+soil_lead <- read_csv("./chap11q21SoilLeadAndHurricanes.csv")
+head(soil_lead)
+
+ggplot(data = soil_lead, mapping= aes(x = Site, y = Change)) +
+  geom_col()
+```
+
+#####The trend suggests that overall a negative change in lead, which means there was less lead in the soil after Hurricane Katrina.
+
+
+####21b:Determine the most plausible range of values for mean change in soil lead
+
+#####One sample t-test
+
+```{r eval=FALSE}
+(t.test(soil_lead$Change))
+```
+
+#####The CI range, which would be the plausible range (95%) of change would be from -201.46978 to -48.31283. A decrease in lead in soil is consistent with the data (not an increase), and the majority of the change values are negative.
+
+
+####21c:
+
+```{r eval=FALSE}
+mean(soil_lead$Soil_lead_Before_Katrina)
+
+mean(soil_lead$Soil_lead_After_Katrina)
+```
+
+#####The mean soil lead before Katrina was 331.7391 and the mean soil lead after was 206.8478.
+
+###W&S t-test questions Chapter 12 Questions 20, 26, and 30
+
+###20:
+
+```{r eval=FALSE}
+electric_fish_spp <- read_csv("./chap12q20ElectricFish.csv")
+
+head(electric_fish_spp)
+```
+
+####20a: What is the mean difference between areas upstream and downstream? What is the 95% CI of the mean difference?
+```{r eval=FALSE}
+mean(electric_fish_spp$speciesUpstream) - mean(electric_fish_spp$speciesDownstream)
+```
+
+#####The mean difference between areas upstream and downstream is -1.83333. See further testing below:
+
+```{r eval=FALSE}
+electric_fish_spp <- electric_fish_spp %>% 
+  mutate(Differnce = speciesUpstream-speciesDownstream)
+
+head(electric_fish_spp)
+
+t.test(electric_fish_spp$Differnce)
+```
+
+#####The mean difference is not signifcant (fails to reject the null at 0.826)
+
+#####The 95% CI is -3.9464134 to 0.2797467
+
+####20b:
+
+```{r eval=FALSE}
+t.test(electric_fish_spp$Differnce)
+```
+
+#####The P value = 0.0826 which means there no effect from tributaries on the number of electric fish species (P is greater than 0.05).
+
+####20c:
+
+#####Assumptions of the one-sample t-test used are that the data are a random sample from the population and that the variable is normally distributed in the population.
+
+###26:
+
+```{r eval=FALSE}
+hyenas <- read_csv("./chap12q26HyenaGiggles.csv")
+
+head(hyenas)
+```
+
+#####two single t-tests to test if mean difference is significant
+
+```{r eval=FALSE}
+hyenas2 <- hyenas %>% 
+  mutate(Differnce = dominantIndividualGiggleVariation - subordinateIndividualGiggleVariation)
+
+head(hyenas2)
+
+t.test(hyenas2$Differnce)
+```
+
+#####Dominant and subordinate individuals do differ in means of giggle spectral CV. The P-value is 0.02157, which means the null hypothesis of no difference was rejected.
+
+###30:
+
+#####A one-sample t-test should have been used for each group instead of combining them to a two-sampled test. The populations are indepedent of eachother, so should be sampled separately. 
+
+# Problem 3
+
+##Power and T
+
+###3.1 Data Generating Process - Write a function that takes two means, two standard deviations, and two sample sizes as arguments. Have it return a data frame or tibble based on the inputs ready to go for a t-test!
+
+```{r eval=FALSE}
+make_T_data <- function(m1, m2, s1, s2, n1, n2){
+  data.frame(treatment = c(rep("A", n1), rep("B", n2)),
+  value = rnorm(n1 + n2, mean = c(rep(m1, n1), rep(m2, n2)),
+                                                 sd = c(rep(s1,n1), rep(s2, n2))))
+  }
+
+#return data.frame
+make_T_data(m1 = 1, m2 = 2, s1 = 1, s2= 2, n1 = 3, n2 = 6)
+```
+
+###3.2 P From T
+
+```{r eval=FALSE}
+get_p_from_t_test <- function(sim_data){
+  #run the t test on the data
+  test <- t.test(value ~ treatment, data = sim_data)
+  #two-tailed t-test
+  test$p.value
+}
+
+get_p_from_t_test(make_T_data(m1 = 1, m2 = 2, s1 = 1, s2= 2, n1 = 3, n2 = 6))
+```
+
+###My stab at the extra credit:
+
+```{r eval=FALSE}
+ifelse(get_p_from_t_test, no)
+```
+
+###3.3 So many Ps!
+
+```{r eval=FALSE}
+replicate(10,
+          get_p_from_t_test(make_T_data(m1 = 1, m2 = 2, s1 = 1, s2= 2, n1 = 3, n2 = 6)))
+```
+#####10 replicated P-values: 0.19975479 0.76713676 0.97602461 0.92534128 0.02232995 0.06355688 0.65827170 0.01189843 0.40331830 0.99937494
+
+###3.3 Extra Credit:
+
+```{r eval=FALSE}
+system.time(10000,
+            get_p_from_t_test(make_T_data(m1 = 1, m2 = 2, s1 = 1, s2= 2, n1 = 3, n2 = 6))) 
+
+##### user  system elapsed 
+#####  0       0       0 
+```
+
+###3.4 I have the power
+
+```{r eval=FALSE}
+get_t_power <- function(m1, m2, s1, s2, n1, n2, nsims = 50, alpha = 0.05){
+  p <- replicate(nsims,
+                 get_p_from_t_test(make_t_data(m1, m2, s1, s2, n1, n2)))
+  num_wrong <- sum(p > alpha)
+  1 - num_wrong/nsims
+}
+
+get_t_power(m1 = 1, m2 = 2, s1 = 1, s2= 2, n1 = 3, n2 = 6)
+```
+
+#####skip power.t.test() comparison question (Jarrett told us too)
+
+
+###3.5 Show it works
+
+```{r eval=FALSE}
+pow_df <- crossing(m1 = 0, m2 = 2, s1 = 0, s2 = 2, n1 = 3, n2 = 6, nsim=100, alpha=0.05) %>%
+  rowwise() %>%
+  mutate(power = get_t_power(m1 = 0, m2 = 2, s1 = 0, s2 = 2, n1 = 3, n2 = 6, nsim=100, alpha=0.05)) +
+  ungroup()
+                             
+library(wesanderson)
+
+pow_df_plot <- ggplot(pow_df, aes(x=n, y = power, color = factor(s))) +
+  geom_line() +
+  scale_color_manual(values = wes_palette(Zissou1, n= 4, type = "discrete"))
+                     
+pow_df_plot    
+```
+
+#####I'm still not able to get this to work, but I coded how to plot the results.
+
+###3.6 Extra Credit 
+
+#####My original function:
+
+```{r eval=FALSE}
+get_p_from_t_test <- function(sim_data){
+  #run the t test on the data
+  test <- t.test(value ~ treatment, data = sim_data)
+  #two-tailed t-test
+  test$p.value
+}
+
+#####My rewritten function with equal variances:
+
+get_p_from_t_test_with_equal_variances <- function(sim_data){
+  #run the t test on the data
+  test <- t.test(value ~ treatment, data = sim_data, var.equal= TRUE)
+  #two-tailed t-test
+  test$p.value
+}
+
+#####to compare: My rewritten function without equal variances:
+
+get_p_from_t_test_without_equal_variances <- function(sim_data){
+  #run the t test on the data
+  test <- t.test(value ~ treatment, data = sim_data, var.equal= FALSE)
+  #two-tailed t-test
+  test$p.value
+}
+```
+
+#####Results comparison:
+
+```{r eval=FALSE}
+get_p_from_t_test_with_equal_variances(make_T_data(m1 = 1, m2 = 2, s1 = 1, s2= 2, n1 = 3, n2 = 6))
+
+get_p_from_t_test_without_equal_variance(make_T_data(m1 = 1, m2 = 2, s1 = 1, s2= 2, n1 = 3, n2 = 6))
+```
+
+#####The fuction only works with equal variance  
